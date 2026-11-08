@@ -1,9 +1,9 @@
 import { projectsData } from '@/constants/projectsData';
 import { H1, H3 } from '@/components/title';
-import { NextPage } from 'next';
 import React from 'react';
 
-const page: NextPage<{ params: { title: string } }> = ({ params: { title } }) => {
+const page = async ({ params }: { params: Promise<{ title: string }> }) => {
+  const { title } = await params;
   return (
     <div className="w-full flex flex-col gap-4">
       <H1>{decodeURIComponent(title)}</H1>

@@ -3,36 +3,41 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "start": "npx serve out",
-    "lint": "next lint"
+    "lint": "eslint .",
+    "test": "node --test tests/*.test.cjs",
+    "test:export": "python3 tests/check_export.py"
   },
   "dependencies": {
-    "@types/node": "^20.2.5",
-    "@types/react": "^18.2.7",
-    "@types/react-dom": "^18.2.4",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "autoprefixer": "^10.4.14",
-    "contentlayer": "^0.3.4",
+    "contentlayer2": "0.5.8",
     "date-fns": "^2.30.0",
-    "next": "^13.4.4",
-    "next-contentlayer": "^0.3.4",
+    "next": "16.4.5",
+    "next-contentlayer2": "0.5.8",
     "postcss": "^8.4.24",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
     "react-feather": "^2.0.10",
     "rehype": "^12.0.1",
     "rehype-pretty-code": "^0.13.0",
-    "rehype-slug": "^5.1.0",
-    "remark-gfm": "^3.0.1",
+    "rehype-slug": "6",
+    "remark-gfm": "4",
     "shiki": "^1.1.6",
     "tailwindcss": "^3.3.2",
-    "typescript": "^5.0.4"
+    "typescript": "5.9.3"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.9",
-    "eslint": "8.57.1",
-    "eslint-config-next": "13.4.4"
+    "eslint": "10.14.0",
+    "eslint-config-next": "16.4.5"
   },
-  "packageManager": "yarn@1.22.22"
+  "packageManager": "yarn@1.22.22",
+  "engines": {
+    "node": ">=24 <25"
+  }
 }

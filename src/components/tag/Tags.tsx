@@ -12,16 +12,16 @@ interface Props {
 }
 
 const Tags: React.FC<Props> = ({ tags }) => {
-  const { handleClick, showAllTags, tagsRef } = useMoreAndHide();
-  const currPath = usePathname();
+  const { handleClick, showAllTags } = useMoreAndHide();
+  const currPath = usePathname().replace(/\/+$/, '');
   const isAllTag = currPath === '/blog' || currPath === `/blog/tag/${Constants.TAG_ALL}`;
-  const currTag = isAllTag ? Constants.CATEGORY_ALL : currPath.split('/')[3];
+  const currTag = isAllTag ? Constants.CATEGORY_ALL : (currPath.split('/')[3] || '');
   const decodedTag = decodeURIComponent(currTag);
 
   return (
     <div>
       <div className="mb-3 text-sm dark:text-tag-dark">Tag</div>
-      <div className="flex flex-wrap overflow-hidden gap-1 text-aside max-h-14 lg:max-h-[13rem]" ref={tagsRef}>
+      <div id="blog-tags" className={`flex flex-wrap overflow-hidden gap-1 text-aside ${showAllTags ? 'opened-tags tags' : 'max-h-14 lg:max-h-[13rem]'}`}>
         {tags.map((t) => (
           <Tag key={t} name={t} size="xs" selected={decodedTag === t} />
         ))}

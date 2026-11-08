@@ -1,9 +1,9 @@
 import { FC } from 'react';
-import { ProjectSection } from '@/types/portfolio';
+import type { ProjectSection as ProjectSectionProps } from '@/types/portfolio';
 import Project from './Project';
 import { H3 } from '../../components/title';
 
-const ProjectSection: FC<ProjectSection> = ({ type, projects }) => {
+const ProjectSection: FC<ProjectSectionProps> = ({ type, projects }) => {
   return (
     <section className="w-full">
       <H3>{type}</H3>

@@ -1,11 +1,14 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import { getTheme, subscribeTheme } from '@/utils/theme';
 
 const Comments = () => {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const container = ref.current;
+    if (!container) return;
     const script = document.createElement('script');
     script.async = true;
     script.setAttribute('src', 'https://giscus.app/client.js');
@@ -22,41 +25,26 @@ const Comments = () => {
     script.setAttribute('data-loading', 'lazy');
     script.setAttribute('crossorigin', 'anonymous');
 
-    if (typeof window !== 'undefined') {
-      const theme = localStorage.getItem('theme') || 'light';
-      script.setAttribute('data-theme', theme);
-    }
-
-    try {
-      ref.current?.appendChild(script);
-    } catch (error) {
-      console.error('Error while rendering giscus widget.', error);
-    }
-  }, []);
-
-  const changeGiscusTheme = (theme: string) => {
-    const iframe = document.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
-    iframe?.contentWindow?.postMessage(
-      {
-        giscus: {
-          setConfig: {
-            theme: theme,
-          },
-        },
-      },
-      'https://giscus.app',
-    );
-  };
-
-  useEffect(() => {
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key) {
-        changeGiscusTheme(event.key);
-      }
+    script.setAttribute('data-theme', getTheme());
+    const sentThemes = new WeakMap<HTMLIFrameElement, string>();
+    const syncTheme = () => {
+      const iframe = container.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
+      const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+      if (!iframe?.contentWindow || sentThemes.get(iframe) === theme) return;
+      iframe.contentWindow.postMessage({ giscus: { setConfig: { theme } } }, 'https://giscus.app');
+      sentThemes.set(iframe, theme);
     };
-    window.addEventListener('storage', handleStorageChange);
+    const onMessage = (event: MessageEvent) => {
+      const iframe = container.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
+      if (event.origin === 'https://giscus.app' && event.source === iframe?.contentWindow && event.data?.giscus) syncTheme();
+    };
+    const unsubscribe = subscribeTheme(syncTheme);
+    window.addEventListener('message', onMessage);
+    container.appendChild(script);
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      unsubscribe();
+      window.removeEventListener('message', onMessage);
+      container.replaceChildren();
     };
   }, []);
 

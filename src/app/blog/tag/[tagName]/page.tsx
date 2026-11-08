@@ -1,12 +1,12 @@
 import React from 'react';
-import { NextPage } from 'next';
 import { BasicLayout } from '@/layouts';
 import { PageTagProps } from '@/types/common';
 import { PostUtil } from '@/utils/post';
 import { Posts } from '@/components/post';
 import { Aside } from '@/layouts/aside';
 
-const page: NextPage<PageTagProps> = ({ params: { tagName } }) => {
+const page = async ({ params }: PageTagProps) => {
+  const { tagName } = await params;
   const decodedTag = decodeURIComponent(tagName);
   const postMetas = PostUtil.getBlogPostMetasByTag(decodedTag);
 

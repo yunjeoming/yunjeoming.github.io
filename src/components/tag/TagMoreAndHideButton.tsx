@@ -8,7 +8,7 @@ interface Props {
 
 const TagMoreAndHideButton: React.FC<Props> = ({ handleClick, showAllTags }) => {
   return (
-    <button className="flex justify-center items-center w-full p-2 text-aside text-sm" onClick={handleClick}>
+    <button type="button" aria-expanded={showAllTags} aria-controls="blog-tags" className="flex justify-center items-center w-full p-2 text-aside text-sm" onClick={handleClick}>
       {showAllTags ? (
         <>
           <span>Hide</span>

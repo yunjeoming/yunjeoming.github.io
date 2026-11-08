@@ -12,7 +12,7 @@ const Series: FC<Props> = ({ name, total }) => {
   const encodedFileName = encodeURIComponent(name);
 
   return (
-    <Link href={`/series/${name}`}>
+    <Link href={`/series/${encodeURIComponent(name)}/`}>
       <div className="w-full flex flex-col items-center gap-2 cursor-pointer p-2">
         <div className={`w-full pt-[60%] relative`}>
           <div className="flex justify-center items-center w-full h-full absolute top-0 left-0 rounded-md overflow-hidden">

@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { Constants } from '@/constants';
 import { Footer, Header } from '@/layouts';
 import './globals.css';
+import { themeInitScript } from '@/utils/theme';
 
 export const metadata: Metadata = {
   metadataBase: new URL(Constants.URL),
@@ -17,8 +18,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko">
+    <html lang="ko" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <link rel="icon" href="/static/favicon.ico" />
       </head>
       <body>
@@ -27,18 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="flex-grow flex flex-col items-center w-full px-5">{children}</main>
           <Footer />
         </div>
-        <script
-          async={true}
-          dangerouslySetInnerHTML={{
-            __html: `
-              const localStorageTheme = localStorage.getItem("theme");
-              const theme = localStorageTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-              if (theme === 'dark') {
-                document.body.classList.add(theme);
-              }
-            `,
-          }}
-        ></script>
+
       </body>
     </html>
   );

@@ -1,8 +1,10 @@
+import Image from 'next/image';
+
 export default function Home() {
   return (
     <section className="max-w-post">
       <div className="flex flex-col sm:flex-row">
-        <img
+        <Image width={800} height={800}
           src="/static/aboutme.jpeg"
           alt="aboutMe"
           className="rounded-md max-w-none w-full max-h-52 object-cover sm:w-2/5 sm:max-h-fit sm:object-contain"
@@ -23,7 +25,7 @@ export default function Home() {
             </li>
             <li>
               <label htmlFor="my-github">Github</label>
-              <a id="my-github" href="https://github.com/yunjeoming" target="_blank">
+              <a id="my-github" href="https://github.com/yunjeoming" target="_blank" rel="noopener noreferrer">
                 https://github.com/yunjeoming
               </a>
             </li>

@@ -1,9 +1,11 @@
+'use client';
+
 import React from 'react';
 import { DateUtil } from '@/utils/date';
 import { Tag } from '../tag';
 import { IPost } from '@/types/post';
 import { Comments } from '../comments';
-import { useMDXComponent } from 'next-contentlayer/hooks';
+import { useMDXComponent } from 'next-contentlayer2/hooks';
 
 interface Props {
   post: IPost;
@@ -24,6 +26,8 @@ const MdxPage = ({ post }: Props) => {
         {description && <p className="text-center xs:m-1">{description}</p>}
         <hr className="my-6" />
         <div className="max-w-full prose dark:prose-invert prose-pre:not-prose [&>*:last-child]:mb-0 [&_a]:break-all">
+          {/* Contentlayer memoizes the component compiled from MDX. */}
+          {/* eslint-disable-next-line react-hooks/static-components */}
           <MDXContent />
         </div>
         {tags && (

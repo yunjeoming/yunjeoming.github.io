@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next';
+import { Constants } from '@/constants';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -6,6 +7,8 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: '*',
       allow: '/',
     },
-    sitemap: 'https://yunjeoming.github.io/sitemap.xml',
+    sitemap: `${Constants.URL}/sitemap.xml`,
   };
 }
+
+export const dynamic = 'force-static';

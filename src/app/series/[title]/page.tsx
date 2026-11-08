@@ -6,7 +6,8 @@ import { PostUtil } from '@/utils/post';
 import { ArrowLeft } from 'react-feather';
 import Link from 'next/link';
 
-const page: React.FC<PageSeriesProps> = ({ params: { title } }) => {
+const page = async ({ params }: PageSeriesProps) => {
+  const { title } = await params;
   const decodedTitle = decodeURIComponent(title);
   const postMetas = PostUtil.getPostMetasBySeries(decodedTitle);
 

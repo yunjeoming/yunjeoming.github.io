@@ -5,27 +5,27 @@ export interface NavbarProps {
 }
 
 export interface PageTagProps {
-  params: {
+  params: Promise<{
     tagName: string;
-  };
+  }>;
 }
 
 export interface PageCategoryProps {
-  params: {
+  params: Promise<{
     categoryName: string;
-  }
+  }>;
 }
 
 export interface PageSlugProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export interface PageSeriesProps {
-  params: {
+  params: Promise<{
     title: string;
-  }
+  }>;
 }
 
 export type Theme = 'dark' | 'light';

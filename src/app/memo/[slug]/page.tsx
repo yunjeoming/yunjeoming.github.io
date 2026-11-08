@@ -1,11 +1,17 @@
+import type { Metadata } from 'next';
 import React from 'react';
-import { NextPage } from 'next';
 import { PageSlugProps } from '@/types/common';
 import { MdxPage } from '@/components/mdx';
 import { PostUtil } from '@/utils/post';
 
-const page: NextPage<PageSlugProps> = ({ params: { slug } }) => {
-  const post = PostUtil.getIPostBySlug(slug);
+export async function generateMetadata({ params }: PageSlugProps): Promise<Metadata> {
+  const { slug } = await params;
+  return PostUtil.getMetadataByPath(`memo/${slug}`);
+}
+
+const page = async ({ params }: PageSlugProps) => {
+  const { slug } = await params;
+  const post = PostUtil.getIPostByPath(`memo/${slug}`);
   return <MdxPage post={post} />;
 };
 

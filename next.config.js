@@ -1,4 +1,4 @@
-const { withContentlayer } = require('next-contentlayer');
+const { withContentlayer } = require('next-contentlayer2');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -9,7 +9,6 @@ const nextConfig = {
   output: 'export',
   trailingSlash: true,
   images: { unoptimized: true },
-  swcMinify: true,
   env: {
     PUBLIC_URL: '',
   },

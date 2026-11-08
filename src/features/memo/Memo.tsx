@@ -1,6 +1,8 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
-import { useMDXComponent } from 'next-contentlayer/hooks';
+import { useMDXComponent } from 'next-contentlayer2/hooks';
 import { TimeStamp } from '@/components/post';
 import { PostProps } from '@/types/post';
 import { H3 } from '../../components/title';
@@ -20,6 +22,8 @@ const Memo: React.FC<PostProps> = ({
         {content && (
           <div className="p-2">
             <div className="line-clamp-5 overflow-hidden [&>*]:mb-3 [&>*:last-child]:mb-0">
+              {/* Contentlayer memoizes the component compiled from MDX. */}
+              {/* eslint-disable-next-line react-hooks/static-components */}
               <MDXContent />
             </div>
           </div>

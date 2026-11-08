@@ -7,7 +7,7 @@ export const SortUtil = {
    * @param postMetas 특정 메타정보의 배열
    */
   compareDescDateByPostMetas(postMetas: IPostMeta[]) {
-    return postMetas.sort((a, b) => compareDesc(new Date(a.date), new Date(b.date)));
+    return [...postMetas].sort((a, b) => compareDesc(new Date(a.date), new Date(b.date)));
   },
 
   /**
@@ -15,6 +15,6 @@ export const SortUtil = {
    * @param seriesesArray [카테고리 이름, 메타정보 배열]의 배열 = 카테고리의 배열화
    */
   sortSeriesName(seriesesArray: SeriesType[]) {
-    return seriesesArray.sort((a, b) => (a[0] > b[0] ? 1 : a[0] < b[0] ? -1 : 0));
+    return [...seriesesArray].sort((a, b) => (a[0] > b[0] ? 1 : a[0] < b[0] ? -1 : 0));
   },
 };

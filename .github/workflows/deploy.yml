@@ -29,9 +29,12 @@ jobs:
       - run: corepack enable
       - run: yarn install --frozen-lockfile
       - uses: actions/configure-pages@v5
+      - run: yarn lint
+      - run: yarn test
       - run: yarn build
         env:
           NEXT_TELEMETRY_DISABLED: '1'
+      - run: yarn test:export
       - uses: actions/upload-pages-artifact@v3
         with:
           path: out

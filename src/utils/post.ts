@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { IPostMeta, IPost, ISeries } from '@/types/post';
 import { allPosts, Post } from 'contentlayer/generated';
 import { Constants } from '@/constants';
@@ -104,23 +105,15 @@ export const PostUtil = {
     };
   },
 
-  /**
-   * slug으로 하나의 게시물(contentlayer의 Post) 가져옴
-   * @param slug 파일명에서 확장자 제거된 이름(*)
-   */
-  getOriginPostBySlug(slug: string) {
-    const decodedSlug = decodeURIComponent(slug);
-    return posts.filter((post) => post._raw.flattenedPath.split('/')[1] === decodedSlug)[0];
+  /** Look up the complete content path so blog and memo filenames cannot collide. */
+  getOriginPostByPath(path: string) {
+    const post = posts.find((post) => post._raw.flattenedPath === path);
+    if (!post) notFound();
+    return post;
   },
 
-  /**
-   * slug으로 하나의 게시물(게시물의 IPost) 가져옴
-   * @param slug 파일명에서 확장자 제거된 이름(*)
-   */
-  getIPostBySlug(slug: string) {
-    const decodedSlug = decodeURIComponent(slug);
-    const post = this.getOriginPostBySlug(decodedSlug);
-    return this.convertPostTypeByPost(post);
+  getIPostByPath(path: string) {
+    return this.convertPostTypeByPost(this.getOriginPostByPath(path));
   },
 
   /**
@@ -153,8 +146,8 @@ export const PostUtil = {
    * 특정 게시물의 메타 데이터 정보
    * @param post 특정 게시물
    */
-  getMetadataBySlug(slug: string): Metadata {
-    const post = PostUtil.getOriginPostBySlug(slug);
+  getMetadataByPath(path: string): Metadata {
+    const post = PostUtil.getOriginPostByPath(path);
     const {
       title,
       description,
@@ -169,10 +162,11 @@ export const PostUtil = {
       title,
       description,
       keywords: tags,
+      alternates: { canonical: `${Constants.URL}/${flattenedPath}/` },
       openGraph: {
         title,
         description,
-        url: `${Constants.URL}/${flattenedPath}`,
+        url: `${Constants.URL}/${flattenedPath}/`,
         siteName: "Yun's blog",
         images: {
           url,
