@@ -1,0 +1,210 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@font-face {
+  font-family: 'NotoSans';
+  src: url('/fonts/NotoSans-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'NotoSans';
+  src: url('/fonts/NotoSans-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'NotoSans';
+  src: url('/fonts/NotoSans-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'NotoSans-KR';
+  src: url('/fonts/NotoSansKR-Light.otf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'NotoSans-KR';
+  src: url('/fonts/NotoSansKR-Regular.otf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'NotoSans-KR';
+  src: url('/fonts/NotoSansKR-Medium.otf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+:root {
+  --height-header-pc: 4rem;
+  --height-header-mo: 3.5rem;
+  --max-width-header: 72rem;
+  --max-width-post: 56rem;
+
+  --tag-color: #6a6a6a;
+  --tag-color-selected: #ffffff;
+  --tag-color-hover: #8f8f8f;
+
+  --tag-bgc-selected: #68baee; /* #3c3c3c*/
+  --tag-bgc-hover: #dadada;
+
+  --tag-border-color: #d3d3d3;
+
+  --dark-tag-color: #ececec;
+  --dark-tag-color-selected: #ffffff;
+
+  --dark-tag-bgc-selected: #68baee; /* #8f8f8f*/
+
+  --a-color: #3b82f6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.sub-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  visibility: hidden;
+  opacity: 0;
+  z-index: 1;
+  transition: opacity 200ms ease-in;
+  background-color: #ffffff;
+}
+
+.contact li {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.contact label {
+  width: 5rem;
+  font-weight: 500;
+}
+
+.contact a {
+  @apply text-blue-500;
+}
+
+.contact a:hover {
+  @apply underline;
+}
+
+.tag {
+  @apply rounded-md px-2 py-1 max-sm:text-xs;
+}
+
+.opened-tags.tags {
+  max-height: fit-content;
+}
+
+[data-rehype-pretty-code-figure] pre {
+  overflow-x: auto;
+  padding: 1rem 0;
+  border: 1px solid #8b8b8b;
+  margin-top: 0;
+}
+
+[data-rehype-pretty-code-figure] pre [data-line] {
+  padding: 0 1.3rem;
+}
+
+/* 제목 title */
+[data-rehype-pretty-code-title] {
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.4rem 1rem;
+  border: 1px solid #8b8b8b;
+  border-top-left-radius: 0.4rem;
+  border-top-right-radius: 0.4rem;
+  border-bottom-style: none;
+}
+
+[data-rehype-pretty-code-title] + pre {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+/* 모든 span에 라인 넘버 부여 */
+[data-rehype-pretty-code-figure] code {
+  counter-reset: line;
+}
+
+[data-rehype-pretty-code-figure] [data-line]::before {
+  counter-increment: line;
+}
+
+/* showLineNumbers 사용시 라인 넘버 보이도록 */
+[data-line-numbers] > [data-line]::before {
+  content: counter(line);
+
+  display: inline-block;
+  width: 1rem;
+  margin-right: 1rem;
+  text-align: right;
+  color: gray;
+}
+
+[data-line-numbers-max-digits='2'] > [data-line]::before {
+  width: 1rem;
+}
+
+[data-line-numbers-max-digits='3'] > [data-line]::before {
+  width: 2rem;
+}
+
+/* 라인 강조 data-highlighted-line */
+[data-highlighted-line] {
+  background-color: #b3c0de40;
+}
+
+/* id 라인 강조 */
+[data-highlighted-line-id='minus'] {
+  position: relative;
+  background-color: #834444;
+}
+
+[data-highlighted-line-id='minus']::before {
+  content: '-';
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-weight: 500;
+  padding-left: 0.3rem;
+  color: #fb8585;
+}
+
+[data-highlighted-line-id='plus'] {
+  position: relative;
+  background-color: #3c6c49;
+  /* background-color: #86f1a0; */
+}
+
+[data-highlighted-line-id='plus']::before {
+  content: '+';
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-weight: 500;
+  padding-left: 0.3rem;
+  color: #43ac5c;
+}
+
+/* 특정 단어 강조 */
+[data-highlighted-chars] {
+  padding: 0.1rem 0;
+  border-radius: 0.2rem;
+  background-color: #698eb870;
+}
+
+/* yellow #ffff007d */

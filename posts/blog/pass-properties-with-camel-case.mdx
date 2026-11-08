@@ -1,0 +1,74 @@
+---
+title: Styled-components props를 Camel 케이스로 전달하기 (with. Mui)
+description: Styled-components에서 Camel 케이스로 프로퍼티를 전달해보자.
+date: 2024-02-20
+series: 이슈 모음집
+tags: [next.js, styled-components, mui]
+imgUrl: pass-properties-with-camel-case.jpeg
+isPublished: true
+---
+
+> React does not recognize the `useBold` prop on a DOM element. 
+> If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `usebold` instead. 
+> If you accidentally passed it from a parent component, remove it from the DOM element.
+
+Mui의 tooltip을 커스텀하여 사용하려고 하는데, 커스텀을 쉽게 하기 위해 Mui에서 제공하는 `styled`를 활용하여 styled-components 형식으로 css를 작성하려고 한다.
+내가 만든 커스텀 tooltip에 필요한 props를 사용자 정의 형식으로 만들고 이 props 값에 의해 css 가 변하도록 아래와 같이 코드를 작성했다.
+
+## 예제 코드
+
+```jsx
+import { ReactElement, type FC, useState } from 'react';
+import MuiTooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
+import Image from 'next/image';
+import { styled } from '@mui/system';
+
+interface Props extends Omit<TooltipProps, 'sx'> {
+  children: ReactElement;
+  useBold?: boolean;
+}
+
+const Tooltip: FC<Props> = ({ children, useBold = false, ...others }) => {
+  return (
+    <StyledTooltip useBold={useBold} {...others}>
+      {children}
+    </StyledTooltip>
+  );
+};
+
+const StyledTooltip = styled(MuiTooltip)<Props>`
+  & .${tooltipClasses.tooltip} {
+    font-weight: ${(props) => (props.useBold ? '700' : '400')};
+  }
+`;
+
+export default Tooltip;
+```
+
+그러나, 위처럼 커스텀 StyledTooltip 컴포넌트를 만들어서 적용시키면 Dom element의 attribute를 소문자로 작성하라며 글 상단의 에러가 발생한다.
+물론 에러가 생겨도 위 코드가 작동은 하지만 콘솔창 에러가 매우 거슬리기에 해결 방법을 찾아보았다.
+
+## 해결 방법
+
+우선 위 코드에서 문제가 되는 부분은 `styled(MuiTooltip)<Props>` 라인이다.
+Mui에서 만들어놓은 MuiTooltip 컴포넌트에 내가 정의한 Props라는 타입을 넣다보니 MuiTooltip 컴포넌트에 존재하지 않는 useBold라는 프로퍼티가 강제로 주입이 되고,
+이 컴포넌트가 Dom element로 변환될 때 "useBold" 자체로 들어가기 때문에 에러가 생기게 된다.
+
+따라서 기존 styled-components 사용 방법 대신 함수형으로 컴포넌트를 작성하여 Props의 구조 분해 할당을 통해 MuiTooltip 컴포넌트에 useBold를 제외한 나머지 프로퍼티만을 할당해준다.
+
+```jsx {1}#minus {2}#plus
+const StyledTooltip = styled(MuiTooltip)<Props>`
+const StyledTooltip = styled(({ useBold, ...others }: Props) => <MuiTooltip {...others} />)`
+  & .${tooltipClasses.tooltip} {
+    font-weight: ${(props) => (props.useBold ? '700' : '400')};
+  }
+`;
+```
+
+위 코드에선 useBold를 제외한 나머지 `others`라는 프로퍼티만 `<MuiTooltip {...others} />`에 주입이 된다.
+
+항상 styled-components 방식으로만 컴포넌트를 정의했는데, 위와 같이 함수형으로 작성하는 건 이번이 처음이어서 살짝 어색하긴 하지만 한편으론 새로운 코드 작성법을 알게 되어 기쁘다. 🙂
+
+### 참고
+
+[https://stackoverflow.com/questions/71451558/getting-warning-from-props-passed-in-mui-styled-components-related-to-react-not](https://stackoverflow.com/questions/71451558/getting-warning-from-props-passed-in-mui-styled-components-related-to-react-not)

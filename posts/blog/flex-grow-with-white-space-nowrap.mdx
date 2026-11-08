@@ -1,0 +1,113 @@
+---
+title: 부모 태그의 flex-grow 1이 무시되어 레이아웃이 망가지는 문제 (feat. white-space nowrap)
+description: 부모 컨테이너의 width가 고정이고 자식의 flex grow가 1일 때 자손 내부 태그에 white-space nowrap이 있으면 레이아웃이 망가진다..!
+date: 2023-08-02
+series: 이슈 모음집
+tags: [css, flex-grow, white-space, nowrap, min-width]
+imgUrl: flex-grow-with-white-space-nowrap.jpeg
+isPublished: true
+---
+
+최상위 태그에 width를 주고 그 `자식 태그`에 flex-grow: 1을 주어 여유 공간을 다 갖게 했지만 자식 태그의 자손에 white-space: nowrap 스타일이 적용되는 순간 `자식 태그`의 레이아웃은 망가진다.
+
+## nowrap 미적용 예제
+
+white-space: nowrap이 적용되기 전 원래 레이아웃을 먼저 확인해보자.
+
+```html
+<!-- html -->
+<div class="parent">
+  <div class="child1">자식1</div>
+  <div class="child2">
+    <span>자식2</span>
+    <div>
+      <div class="no">
+        Lorem ipsum, dolor sit amet consectetur adipisicing elit. Numquam saepe quasi, mollitia nihil, hic totam
+        cupiditate vel accusantium illo ipsa error, odit ipsam. Officia, dignissimos libero voluptas mollitia enim id.
+      </div>
+      <div>
+        <span>자손</span>
+        <div>
+          <span>제일 막내</span>
+          <div class="grand-child">
+            Lorem ipsum, dolor sit amet consectetur adipisicing elit. Numquam saepe quasi, mollitia nihil, hic totam
+            cupiditate vel accusantium illo ipsa error, odit ipsam. Officia, dignissimos libero voluptas mollitia enim
+            id.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+```css
+/* css */
+.parent {
+  display: flex;
+  width: 500px;
+}
+
+.child1 {
+  flex-basis: 70px;
+  flex-shrink: 0;
+  background-color: #d1cff7;
+}
+
+.child2 {
+  flex-grow: 1;
+  background-color: #eebcbc;
+}
+
+.child2 div {
+  padding: 8px;
+  border: 1px solid black;
+}
+```
+
+![원래 레이아웃](../posts/blog/flex-grow-with-white-space-nowrap/origin-layout.png)
+
+위 예제는 일부러 하위 태그를 마구 넣어 여러 계층을 만들었지만, 일반적으로 특정 제목이 위와 같은 구조를 갖기도 한다. 만약, 제목을 다 보여주는 것이 아니라 말줄임을 적용할 경우 white-space: nowrap를 사용해야 하는데 제목에 white-space: nowrap을 사용하는 경우 레이아웃이 생각과 다르게 나타날 것이다.
+
+📍 물론, 말줄임을 사용하기 위해서는 해당 태그에 width를 적용해야 한다. 하지만 여기선 `flex-grow: 1`을 적용한 상태인데 이 경우 width를 고정시켜 버리면 flex-grow: 1을 적용한 의미가 없어지기에 여기서 flex-grow: 1과 width를 동시에 적용하지 않았다.
+
+## nowrap 적용 예제
+
+이제 최하위 태그인 grand-child 클래스에 `white-space: nowrap`을 적용하면 해당 레이아웃은 아래와 같다.
+
+```css
+/* 추가한 css - nowrap 적용 */
+.grand-child {
+  white-space: nowrap;
+}
+```
+
+![nowrap 적용 레이아웃](../posts/blog/flex-grow-with-white-space-nowrap/nowrap-layout.png)
+
+원래 레이아웃과 다르게 child2가 무한정 늘어난 것을 확인할 수 있다. 여기서 주의해야 할 점은 grand-child 클래스가 커지면서 width가 고정되지 않은 no 클래스의 텍스트 또한 같이 길어졌다는 것이다. 즉 width를 주지 않은 태그가 있다면 레이아웃이 갑자기 망가질 수 있다는 것이다.
+
+## 해결 방법
+
+```css
+/* 추가한 css - min-width 적용 */
+.child2 {
+  flex-grow: 1;
+  background-color: #eebcbc;
+  min-width: 0;
+}
+```
+
+flex-grow: 1이 적용된 child2에 `min-width: 0`을 추가한다.
+
+flex가 적용된 자식 태그에는 우선적으로 min-width: auto가 적용되기 때문에 min-width: 0으로 auto를 덮어씌우면 child2의 width가 늘어나지 않는다.
+아래는 브라우저 개발자 도구에서 min-width: 0의 체크박스를 계속 클릭하여 각 옵션에 대해 레이아웃이 어떻게 변하는지를 gif로 저장한 것이다.
+
+![min-width 적용](https://github.com/yunjeoming/yuns-blog/assets/76480300/bdfcdd64-3bc4-41c0-bb6e-dd65c25df437)
+
+min-width: 0이 적용되면 grand-child만 white-space: nowrap이 적용되어 해당 내용만 삐죽 튀어나온다! text-overflow: ellipsis, overflow: hidden을 같이 사용하면 grand-child가 말줄임 되어 parent 내부에 쏙 들어가게 된다. 🎉
+
+css의 flex를 사용하여 레이아웃을 정할 때가 많은데 flex를 무의식적으로 남발하다보면 나도 모르는 사이에 위와 같이 레이아웃이 망가질 때가 있다. flex가 간편하지만 알게모르게 여러 기능들이 있어서 가끔 헷갈릴 때가 있는데 css도 꾸준히 공부해야겠네 😤
+
+### 출처
+
+[https://heewon26.tistory.com/298](https://heewon26.tistory.com/298)

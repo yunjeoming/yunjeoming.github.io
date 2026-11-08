@@ -1,0 +1,242 @@
+---
+title: Next.js 블로그에 SEO 적용하기
+description: Next.js(13.4.4버전)로 만든 블로그에 SEO를 적용해보자!
+date: 2023-06-14
+series: Next.js 블로그 만들기
+tags: [next.js, next.js블로그, next.js13, seo, metadata, sitemap, robots]
+imgUrl: set-seo.jpeg
+isPublished: true
+---
+
+블로그가 얼추 다 만들어졌다.🎉
+
+내 블로그 글들이 포털에서 검색이 되도록 SEO를 적용하려고 하는데 구글링을 해보니 [next-seo](https://github.com/garmeeh/next-seo) 라이브러리를 대부분 활용하는 듯 했다.
+
+라이브러리 활용도 좋지만, 우선 공식문서를 참고하여 직접 하나하나 적용해보고 크롤링이 제대로 안 된다~ 싶으면 그 때 라이브러리를 사용해보려고 한다!
+
+📍 나는 현재 Next.js **13.4.4** 버전을 사용하고 있다.
+
+## \<head> 태그의 \<title>, \<meta> 태그 설정
+
+웹 페이지의 정보를 검색 엔진 크롤러에게 제대로 전달해주는 것은 중요하다.
+따라서 \<head> 태그의 \<title>, \<meta> 태그를 각 페이지에 맞게 설정해야 한다. (반은 먹고 들어간다 생각한다.)
+
+처음 만들었던 `HeadMeta.tsx`를 사용하면 \<head> 태그\([Next.js 공식문서 - Head](https://nextjs.org/docs/pages/api-reference/components/head)\)가 적용이 되지 않아 공식문서를 찾아보니 Metadata를 사용하여 \<head>를 적용 해야한다.
+
+📍 [Next.js의 Metadata 필드 확인하기](https://nextjs.org/docs/app/api-reference/functions/generate-metadata)
+
+### Metadata
+
+정적 metadata는 layout.tsx 또는 page.tsx에서만 사용 가능하다.
+
+난 내부 태그 페이지에서도 metadata를 함께 적용시키기 위해 layout.tsx에 정의했다.
+
+```js
+export const metadata: Metadata = {
+  title: 'Blog',
+  description: PageConstants.BLOG_DESCRIPTION,
+};
+
+const layout = ({ children }: { children: React.ReactNode }) => {
+  return <>{children}</>;
+};
+
+export default layout;
+```
+
+동적 metadata는 generateMetadata()를 사용 해야한다. 
+
+layout.tsx에서는 테스트 해 볼 생각은 하지 않아서 모르겠다만, page.tsx에서만 generateMetadata()가 실행된다. 내 경우 \[slug\]/page.tsx에서는 무조건 MdxPage 컴포넌트를 렌더링 하게 해놨는데, MdxPage에서는 위 generateMetadata()가 호출되지 않는다. \<head> 태그를 바꿔줄 페이지 상단에 generateMetadata()를 모두 호출해줬고 slug로부터 특정 Metadata를 얻게해주는 유틸함수를 만들어서 함수 내부에서 같은 내용을 호출하도록 했다.
+
+```javascript
+import { Metadata, NextPage } from 'next';
+
+export function generateMetadata({ params: { slug } }: PageSlugProps): Metadata {
+  return PostUtil.getMetadataBySlug(slug);
+}
+
+const page: NextPage<PageSlugProps> = ({ params: { slug } }) => {
+  const post = PostUtil.getIPostBySlug(slug);
+  return <MdxPage post={post} />;
+};
+
+export default page;
+```
+
+정말 다양한 \<meta> 태그가 있었지만 주로 사용하는 태그만 적용시켰다. 
+원하는 필드가 없을 경우 [Next.js 공식문서 - Metadata](https://nextjs.org/docs/app/api-reference/functions/generate-metadata)에서 확인 가능하다. 내가 적용한 \<meta> 태그는 아래와 같다.
+
+```ts
+getMetadataBySlug: (slug: string): Metadata => {
+  //...
+  return {
+    title,
+    description,
+    keywords: tags,
+    openGraph: {
+      title,
+      description,
+      url: `/${flattenedPath}`,
+      siteName: "Yun's blog",
+      images: {
+        url: imgUrl || '',
+        alt: 'Post Image',
+      },
+      locale: 'ko_KR',
+      type: 'article',
+      tags,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      creator: "yunjeoming",
+      title,
+      description,
+      images: {
+        url: imgUrl || '',
+        alt: 'Post Image',
+      },
+    },
+  };
+},
+```
+
+이제 각 포스트 화면에 \<meta> 태그가 적용이 되었다.🎉
+
+![meta tag](../posts/blog/set-seo/meta-tag.png)
+
+👇 될 줄 알고 처음에 만들었던 `HeadMeta.tsx` (이전 버전에서는 적용되는 듯 하다. 현재 내 버전에서는 적용되지 않는다.)
+
+```tsx
+import React from 'react';
+import Head from 'next/head';
+import { IPost } from '@/types/Post';
+
+interface Props {
+  post: IPost;
+}
+
+const HeadMeta: React.FC<Props> = ({
+  post: {
+    meta: { title, description, imgUrl, slug },
+  },
+}) => {
+  return (
+    <Head>
+      <title>{title}</title>
+      <meta name="description" content={description} />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <meta name="author" content="yunjeoming" />
+
+      <meta property="og:title" content={title} />
+      <meta property="og:description" content={description} />
+      <meta property="og:type" content="website" />
+      <meta property="og:url" content={`https://${slug}`} />
+      <meta property="og:image" content={imgUrl} />
+      <meta property="og:image:alt" content={`윤로그 이미지`} />
+      <meta property="og:locale" content="ko_KR" />
+
+      <meta name="twitter:card" content="summary" />
+      <meta name="twitter:title" content={title} />
+      <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content={imgUrl} />
+      <meta name="twitter:image:alt" content={`윤로그 이미지`} />
+    </Head>
+  );
+};
+
+export default HeadMeta;
+```
+
+## sitemap.xml 설정
+
+sitemap.xml는 검색 엔진 크롤러에게 웹 사이트의 구조를 제공하는 파일이다. sitemap.xml에 모든 url을 설정하고 페이지 별 우선 순위를 알려줄 수 있다.
+
+[Next.js 공식문서 - sitemap](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/sitemap)에 적혀있는대로 sitemap.ts를 만들었다. 검색을 해보니 `next-sitemap` 라이브러리를 사용하기도 하는데, 공식문서에선 /app 폴더에 추가하라고 해서 우선 공식문서를 따라 하기로 했다.
+
+작성 내용은 아래와 같다.
+
+```ts
+import { MetadataRoute } from 'next';
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  return [
+    {
+      url: 'https://yunjeoming.dev',
+    },
+    {
+      url: 'https://yunjeoming.dev/blog',
+    },
+    {
+      url: 'https://yunjeoming.dev/issue',
+    },
+  ];
+}
+```
+
+브라우저 주소창에 `블로그주소/sitemap.xml` 을 검색해서 아래와 같은 화면이 뜨는지 확인해보자.
+
+![/sitemap.xml 검색시 뜨는 화면](../posts/blog/set-seo/sitemap.png)
+
+## robots.txt 설정
+
+robots.txt는 검색 엔진 크롤러에게 웹 사이트의 url 별 접근을 결정하는 파일이다. 모든 책의 **목차**에서 원하는 페이지를 바로 볼 수 있듯이, robots.txt는 어느 페이지를 방문하고, 방문하지 않을 지 결정하도록 도와준다.
+
+[Next.js 공식문서 - robots.txt](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/robots)는 /app 폴더에 robots.txt 파일을 생성하라고 한다. sitemap.ts와 통일성을 주기 위해 robots.ts로 생성했다.
+
+작성 내용은 아래와 같다.
+
+```ts
+import { MetadataRoute } from 'next';
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: {
+      userAgent: '*',
+      allow: '/',
+    },
+    sitemap: 'https://.../sitemap.xml',
+  };
+}
+```
+
+브라우저 주소창에 `블로그주소/robots.txt` 를 검색해서 아래와 같은 화면이 뜨는지 확인해보자.
+
+![/robots.txt 검색시 뜨는 화면](../posts/blog/set-seo/robots.png)
+
+## 캐노니컬(Canonical) 태그 설정
+
+url에 query string이 있으면 query string을 무시하고 통합된 하나의 url만 검색하도록 해서 페이지의 크롤링 작업을 줄여주는 태그이다.
+
+쇼핑몰에서 하나의 상품을 클릭하여 해당 상품 페이지로 이동하면 상품의 옵션마다 각 url이 달라질 수 있다. 옵션이 제각각이어도 모두 같은 하나의 상품이기 때문에 뒤의 query string을 제거하여 기존의 상품 페이지 단 하나만 크롤링되도록 한다.
+
+
+[Next.js 공식문서 - metadatabase](https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase)에 적혀있는 내용은 아래와 같다. 위 ts 형식으로 작성하면 아래의 html 형식으로 반환된다.
+
+```ts
+export const metadata = {
+  metadataBase: new URL('https://....'),
+  alternates: {
+    canonical: '/',
+    languages: {
+      'en-US': '/en-US',
+      'de-DE': '/de-DE',
+    },
+  },
+  openGraph: {
+    images: '/og-image.png',
+  },
+}
+```
+
+```html
+<link rel="canonical" href="https://acme.com" />
+<link rel="alternate" hreflang="en-US" href="https://acme.com/en-US" />
+<link rel="alternate" hreflang="de-DE" href="https://acme.com/de-DE" />
+<meta property="og:image" content="https://acme.com/og-image.png" />
+```
+
+블로그에선 query string을 사용하지 않기 때문에 난 적용하지 않았다.
+
+## 마무리
+
+우선은 간단하게 이 정도 기본만 작성하고, 적용이 덜 되거나 안 될 경우 방법을 다시 찾고 적용할 예정이다. 😊

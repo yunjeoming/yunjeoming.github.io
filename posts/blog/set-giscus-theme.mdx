@@ -1,0 +1,74 @@
+---
+title: giscus에 다크 모드 적용하기 (feat. state 대신 event 활용)
+description: state 대신 event를 활용하여 다크 모드를 적용해보자
+date: 2023-07-29
+series: Next.js 블로그 만들기
+tags: [giscus, giscus다크모드, next.js블로그, storageEvent, dispatchEvent]
+imgUrl: set-giscus-theme.jpeg
+isPublished: true
+---
+
+블로그에 깃허브 댓글 기능을 추가할 수 있는 대표적인 도구로 `Utterance`가 있다. 나도 처음에는 Utterance를 사용하려고 했으나, `Giscus`는 대댓글을 달 수 있는 것과 `Issues` 탭 대신 `Discussions`탭을 사용한다는 것이 끌려서 Utterance 대신 Giscus를 사용했다.
+
+## 문제점
+
+Comments 컴포넌트를 따로 만들고 Giscus 설정을 그대로 적용하니 깃허브 댓글 기능을 바로 사용할 수 있었다. 그러나, 초기에 localStorage의 theme 값을 가져와 적용시키기는 했는데 다크 모드 \<-\> 라이트 모드 전환 시 giscus의 테마가 변경되지 않는 점이 매우 거슬렸다.
+
+제일 먼저 떠올린 해결 방법은 전역 상태 설정이었다. 하지만 내 블로그에서는 테마 모드 변경에 state를 사용하지 않았기 때문에 이것(giscus) 하나 때문에 전역 상태 설정을 해야한다는 점이 내게 배보다 배꼽이 더 큰 상황처럼 느껴졌달까..?
+
+테마 변경 아이콘을 클릭했을 때 유일하게 localStorage 값만 변경되어서 이걸 어떻게 활용할 수 있을까 찾아보니 window 이벤트 중에 storage 값이 변경될 때 storage라는 이벤트가 발생하는 걸 알게 됐다.😊 [(참고 mdn - window storage_event)](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event)
+
+## 이벤트 핸들러 추가하기
+
+```ts
+// Comments.tsx
+useEffect(() => {
+  const handleStorageChange = (event: StorageEvent) => {
+    console.log(event);
+  };
+  window.addEventListener('storage', handleStorageChange);
+  return () => {
+    window.removeEventListener('storage', handleStorageChange);
+  };
+}, []);
+```
+
+위와 같이 코드를 추가하고 테마 변경 버튼을 클릭했으나 콘솔에 아무 것도 찍히지 않았다. 개발자 도구 탭에서 localStorage 값이 변경되는 걸 확인했는데 handleStorageChange 함수가 작동하질 않았다. 다른 방법을 찾아야하나 싶었지만 event를 강제로 실행시켜봤더니 이벤트 핸들러가 동작했고 콘솔 값도 얻을 수 있었다.
+
+```ts
+// ThemeMode.tsx
+const changeTheme = useCallback(() => {
+  const currTheme = localStorage.getItem('theme');
+  const otherTheme = currTheme === 'light' ? 'dark' : 'light';
+  localStorage.setItem('theme', otherTheme);
+  document.body.classList.toggle('dark');
+  window.dispatchEvent(new StorageEvent('storage', { key: otherTheme })); // 💡 새로 추가
+}, []);
+```
+
+![storage event 콘솔 출력](../posts/blog/set-giscus-theme/storageevent.jpeg)
+
+위 event.key에 현재 테마 값이 담겨 있다. 이 테마 값을 아래와 같이 적용시키면 giscus의 테마가 현재 테마에 맞게 변경이 잘 되는 것을 확인할 수 있다.🎉
+
+```ts
+// Comments.tsx
+const changeGiscusTheme = (theme: string) => {
+  const iframe = document.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
+  iframe?.contentWindow?.postMessage(
+    {
+      giscus: {
+        setConfig: {
+          theme: theme,
+        },
+      },
+    },
+    'https://giscus.app',
+  );
+};
+```
+
+![테마 변경 gif](https://github.com/yunjeoming/yuns-blog/assets/76480300/78567552-7a87-4e62-ad10-41c96bca7545)
+
+
+### 참고
+[https://github.com/giscus/giscus/issues/336](https://github.com/giscus/giscus/issues/336)
